@@ -9,6 +9,7 @@ def parse():
     parser.add_argument('keys', type=str, help='include four keys.')
     parser.add_argument('keyword', type=str, help='To search word.')
     parser.add_argument('count', type=int, help='search num.')
+    parser.add_argument('output_file', help='outputfile is csv')
     args = parser.parse_args()
     return args
 
@@ -41,6 +42,7 @@ class Twitter_api():
         self.keyword = ""
         self.count = 0
         self.tweets = ""
+        self.sentences = []
 
     def set_keyword(self, keyword):
         self.keyword = keyword
@@ -49,24 +51,19 @@ class Twitter_api():
         self.count = count
 
     def get_tweets(self):
-        self.tweets = self.api.search(self.keyword, self.count)
-        return self.tweets
+        self.tweets = self.api.search(q=self.keyword, count=self.count)
 
-
-    def tweets2sentences(self, tweets):
-        sentences = []
-        for tweet in tweets:
-            corpus = tweet.text
+    def tweets2sentences(self):
+        for tweet in self.tweets:
+            corpus = tweet.text # text in tweet
             corpus = corpus.split('\n')
             for sentence in corpus:
-                sentences.append(sentence + '<EOS>')
-                # TODO sentences.append(tweet.profile)
-        return sentences
+                self.sentences.append('<BOS>' + sentence + '<EOS>')
+                # TODO self.sentences.append(tweet.profile)
 
-
-    def export_csv_data(self, fname, sentences):
+    def export_csv_data(self, fname):
         with open(fname, 'w') as fp:
-            for sentence in sentences:
+            for sentence in self.sentences:
                 sentence = sentence + ','
                 fp.write(sentence + '\n')
 
@@ -81,6 +78,9 @@ def main():
     twitter = Twitter_api(twitter_connection.auth)
     twitter.set_keyword(args.keyword)
     twitter.set_count(args.count)
+    twitter.get_tweets()
+    twitter.tweets2sentences()
+    twitter.export_csv_data(args.output_file)
 
 
 if __name__ == '__main__':
