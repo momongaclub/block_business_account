@@ -69,14 +69,13 @@ class Embeddings():
 
     def load_embeddings(self, embeddings_data):
         with open(embeddings_data, 'r') as fp:
-            for embedding in fp:
+            for embedding in fp: # TODO pop(0)
                 embedding = embedding.rstrip('\n')
                 embedding = embedding.split(' ')
                 word = embedding.pop(0)
                 self.embeddings[word] = embedding
 
     def sentences2embeddings(self):
-        number = self.sentences.pop(0)
         for sentence in self.sentences:
             vector = []
             for word in sentence:
@@ -106,7 +105,7 @@ def main():
     bilstm_model.load_model()
     bilstm_model.compile()
 
-    bilstm_model.model.fit(embeddings.x_train, embeddings.y_train)
+    bilstm_model.model.fit(embeddings.x_train, embeddings.y_train, epochs = 100)
 
 if __name__ == '__main__':
     main()
