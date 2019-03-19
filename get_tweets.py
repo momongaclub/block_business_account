@@ -1,6 +1,5 @@
 import argparse
 import tweepy
-import sys
 import json
 import csv
 
@@ -8,6 +7,8 @@ import csv
 def parse():
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('keys', type=str, help='include four keys.')
+    parser.add_argument('keyword', type=str, help='To search word.')
+    parser.add_argument('count', type=int, help='search num.')
     args = parser.parse_args()
     return args
 
@@ -21,7 +22,6 @@ class Twitter_connection():
     def load_keys(self, fname):
         with open(fname, 'r') as fp:
             for line in fp:
-                line.rstrip('\n')
                 name, key = line.split(' ')
                 self.keys[name] = key.rstrip('\n')
 
@@ -53,23 +53,22 @@ class Twitter_api():
         return self.tweets
 
 
-def tweets2sentences(tweets):
-    sentences = []
-    for tweet in tweets:
-        corpus = tweet.text
-        corpus = corpus.split('\n')
-        for sentence in corpus:
-            sentences.append(sentence + '<EOS>')
-            # TODO sentences.append(tweet.profile)
+    def tweets2sentences(self, tweets):
+        sentences = []
+        for tweet in tweets:
+            corpus = tweet.text
+            corpus = corpus.split('\n')
+            for sentence in corpus:
+                sentences.append(sentence + '<EOS>')
+                # TODO sentences.append(tweet.profile)
+        return sentences
 
-    return sentences
 
-
-def export_csv_data(fname, sentences):
-    with open(fname, 'w') as fp:
-        for sentence in sentences:
-            sentence = sentence + ','
-            fp.write(sentence + '\n')
+    def export_csv_data(self, fname, sentences):
+        with open(fname, 'w') as fp:
+            for sentence in sentences:
+                sentence = sentence + ','
+                fp.write(sentence + '\n')
 
 
 def main():
@@ -80,10 +79,8 @@ def main():
     twitter_connection.access_token()
 
     twitter = Twitter_api(twitter_connection.auth)
-    keyword = '日本語'
-    count = 100
-    twitter.set_keyword(keyword)
-    twitter.set_count(count)
+    twitter.set_keyword(args.keyword)
+    twitter.set_count(args.count)
 
 
 if __name__ == '__main__':
