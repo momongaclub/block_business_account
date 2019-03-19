@@ -7,18 +7,16 @@ import csv
 
 def parse():
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('keys', type=str, help='It is include four keys.')
+    parser.add_argument('keys', type=str, help='include four keys.')
     args = parser.parse_args()
     return args
 
 
 class Twitter_connection():
 
-
     def __init__(self):
         self.keys = {}
         self.auth = None
-
 
     def load_keys(self, fname):
         with open(fname, 'r') as fp:
@@ -27,13 +25,13 @@ class Twitter_connection():
                 name, key = line.split(' ')
                 self.keys[name] = key.rstrip('\n')
 
-
     def OAuthHandler(self):
-        self.auth = tweepy.OAuthHandler(self.keys['CONSUMER_KEY'], self.keys['CONSUMER_SECRET'])
-
+        self.auth = tweepy.OAuthHandler(self.keys['CONSUMER_KEY'],
+                                        self.keys['CONSUMER_SECRET'])
 
     def access_token(self):
-        self.auth.set_access_token(self.keys['ACCESS_TOKEN'], self.keys['ACCESS_SECRET'])
+        self.auth.set_access_token(self.keys['ACCESS_TOKEN'],
+                                   self.keys['ACCESS_SECRET'])
 
 
 class Twitter_api():
@@ -44,14 +42,11 @@ class Twitter_api():
         self.count = 0
         self.tweets = ""
 
-
     def set_keyword(self, keyword):
         self.keyword = keyword
 
-
     def set_count(self, count):
         self.count = count
-
 
     def get_tweets(self):
         self.tweets = self.api.search(self.keyword, self.count)
@@ -93,3 +88,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
