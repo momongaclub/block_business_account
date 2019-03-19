@@ -1,0 +1,5 @@
+[embeddings] 'wakati_wiki.data'
+[optimizer] 'adam'
+[n_out] '2'
+[loss] 'categorical_crossentropy',
+[metrics] 'accuracy'
