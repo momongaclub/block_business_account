@@ -11,73 +11,103 @@ input: vector of sentence writtenby japanese
 output: binary value.
 """
 
-N_IN = 100
-N_HIDDEN = 100
-N_OUT = 100
-BATCH_SIZE = None
-LENGTH_OF_SEQUENCE = 100
-
 
 def parse():
     parser = argparse.ArgumentParser()
     parser.add_argument('config_file',
                          help = 'config_file have any parametors.')
+    parser.add_argument('training_data',
+                         help = 'To training_data')
+    parser.add_argument('embeddings_data',
+                         help = 'To embeedings_data')
+
     args = parser.parse_args()
     return args
 
 
-def load_model():
-    model = Sequential()
-    #model.add(LSTM(units = N_HIDDEN, input_shape=(LENGTH_OF_SEQUENCE, N_IN)))
-    model.add(Dense(units = N_OUT))
-    model.add(Activation('sigmoid'))
-
-    return model
-
-
-def load_config_file(config_file):
-    columm2value = {}
-    with open(config_file, 'r') as fp:
-        for line in fp:
-            line = line.rstrip('\n')
-            columm, value = line.split(' ')
-            columm2value[columm] = value
-    return columm2value
-
-
-
-class Model():
+class BILSTM_Model():
 
     def __init__(self):
-        self.n_in = 100
-        self.n_hidden = 100
-        self.n_out = 100
+        self.model = None
         self.length_of_sequence = 10
         self.batch_size = 10
-        self.model = load_model()
+        self.configs = {}
+
+    def load_model(self):
+        self.model = Sequential()
+        #model.add(LSTM(units = N_HIDDEN, input_shape=(LENGTH_OF_SEQUENCE, N_IN)))
+        self.model.add(Dense(units = int(self.configs['n_out']) ))
+        self.model.add(Activation('sigmoid'))
+
+    def load_config(self, config_file):
+        with open(config_file, 'r') as fp:
+            for line in fp:
+                line = line.rstrip('\n')
+                name, value = line.split(':')
+                self.configs[name] = value
+
+    def compile(self):  
+        self.model.compile(loss = self.configs['loss'],
+                           optimizer = self.configs['optimizer'],
+                           metrics = [self.configs['metrics']])
 
 
-    def load_training_data(self):
+class Embeddings():
+
+    def __init__(self):
+        self.vectors = []
+        self.embeddings = {}
+        self.sentences = []
+        self.x_train = np.random.random((100, 100))
+        self.y_train = np.random.randint(100, size=(100, 100))
+        self.x_test = None
+        self.y_test = None
+
+    def load_training_data(self, training_data):
+        with open(training_data, 'r') as fp:
+            for sentence in fp:
+                sentence = sentence.rstrip('\n')
+                self.sentences.append(sentence)
+
+    def load_embeddings(self, embeddings_data):
+        with open(embeddings_data, 'r') as fp:
+            for embedding in fp:
+                embedding = embedding.rstrip('\n')
+                embedding = embedding.split(' ')
+                word = embedding.pop(0)
+                self.embeddings[word] = embedding
+
+    def sentences2embeddings(self):
+        for sentence in self.sentences:
+            vector = []
+            for word in sentence:
+                if self.embeddings.get(word, None) == None:
+                    word = '<unk>'
+                else:
+                    word = self.embeddings[word]
+                vector.append(word) 
+            self.vectors.append(vector)
+
+    def split_data(self):
         return 0
 
-
-    def load_config_file(self):
+    def embedding_zero(self):
         return 0
 
 
 def main():
     args = parse()
-    config__file = load_config_file(args.config_file)
-    model = Model()
+    bilstm_model = BILSTM_Model()
+    bilstm_model.load_config(args.config_file)
+    bilstm_model.load_model()
+    bilstm_model.compile()
 
-    model.model.compile(loss='categorical_crossentropy',
-                  optimizer='adam',
-                  metrics=['accuracy'])
+    embeddings = Embeddings()
+    embeddings.load_training_data(args.training_data)
+    embeddings.load_embeddings(args.embeddings_data)
+    embeddings.sentences2embeddings()
 
-    x_train = np.random.random((100, 100))
-    y_train = np.random.randint(100, size=(100, 100))
-
-    model.model.fit(x_train, y_train)
+    bilstm_model.model.fit(embeddings.x_train, embeddings.y_train)
 
 if __name__ == '__main__':
     main()
