@@ -61,6 +61,7 @@ class Embeddings():
         self.y_test = None
 
     def load_training_data(self, training_data):
+        # TODO split x,y data
         with open(training_data, 'r') as fp:
             for sentence in fp:
                 sentence = sentence.rstrip('\n')
@@ -75,11 +76,12 @@ class Embeddings():
                 self.embeddings[word] = embedding
 
     def sentences2embeddings(self):
+        number = self.sentences.pop(0)
         for sentence in self.sentences:
             vector = []
             for word in sentence:
                 if self.embeddings.get(word, None) is None:
-                    word = '<unk>'
+                    word = '<unk>' #TODO unknown word process
                 else:
                     word = self.embeddings[word]
                 vector.append(word)
