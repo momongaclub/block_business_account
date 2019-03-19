@@ -2,6 +2,7 @@ import argparse
 import tweepy
 import json
 import csv
+import MeCab
 
 
 def parse():
@@ -55,17 +56,26 @@ class Twitter_api():
 
     def tweets2sentences(self):
         for tweet in self.tweets:
-            corpus = tweet.text # text in tweet
+            corpus = tweet.text  # text in tweet
             corpus = corpus.split('\n')
             for sentence in corpus:
-                self.sentences.append('<BOS>' + sentence + '<EOS>')
+                self.sentences.append(sentence)
                 # TODO self.sentences.append(tweet.profile)
 
     def export_csv_data(self, fname):
         with open(fname, 'w') as fp:
             for sentence in self.sentences:
-                sentence = sentence + ','
+                sentence = sentence.rstrip('\n')
+                sentence = '<BOS>' + ' ' + sentence + ' ' + '<EOS>'
                 fp.write(sentence + '\n')
+
+    def sentences2wakati_sentences(self):
+        wakati_sentences = []
+        mecab = MeCab.Tagger("-Owakati")
+        for sentence in self.sentences:
+            wakati_sentence = mecab.parse(sentence)
+            wakati_sentences.append(wakati_sentence)
+        self.sentences = wakati_sentences
 
 
 def main():
@@ -80,6 +90,7 @@ def main():
     twitter.set_count(args.count)
     twitter.get_tweets()
     twitter.tweets2sentences()
+    twitter.sentences2wakati_sentences()
     twitter.export_csv_data(args.output_file)
 
 
