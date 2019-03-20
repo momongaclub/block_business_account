@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow
 import keras
 from keras.models import Sequential
-from keras.layers import Dense, Activation
+from keras.layers import Dense, Activation, Embedding
 from keras.layers.recurrent import LSTM
 
 """
@@ -31,8 +31,10 @@ class BILSTM_Model():
 
     def load_model(self):
         self.model = Sequential()
-        # model.add(LSTM(units = N_HIDDEN,
-        #                input_shape=(LENGTH_OF_SEQUENCE, N_IN)))
+        self.model.add(Embedding(input_dim=1000, output_dim=1000,
+                                 input_length=100, mask_zero=True))
+        self.model.add(LSTM(units = 100,
+                        input_shape=(1000, 100)))
         self.model.add(Dense(units=int(self.configs['n_out'])))
         self.model.add(Activation('sigmoid'))
 
@@ -59,6 +61,8 @@ class Embeddings():
         self.y_train = np.random.randint(100, size=(100, 100))
         self.x_test = None
         self.y_test = None
+        self.epochs = 1
+        self.maxlen = 1000
 
     def load_training_data(self, training_data):
         # TODO split x,y data
@@ -89,8 +93,11 @@ class Embeddings():
     def split_data(self):
         return 0
 
-    def embedding_zero(self):
-        return 0
+
+def debug_vectors(vectors):
+    for vector in vectors:
+        print(len(vector))
+        print('\n')
 
 
 def main():
@@ -105,7 +112,8 @@ def main():
     bilstm_model.load_model()
     bilstm_model.compile()
 
-    bilstm_model.model.fit(embeddings.x_train, embeddings.y_train, epochs = 100)
+    bilstm_model.model.fit(embeddings.x_train, embeddings.y_train, epochs = embeddings.epochs)
+
 
 if __name__ == '__main__':
     main()
