@@ -31,12 +31,11 @@ class BILSTM_Model():
 
     def load_model(self):
         self.model = Sequential()
-        self.model.add(Embedding(input_dim=1000, output_dim=1000,
-                                 input_length=100, mask_zero=True))
-        self.model.add(LSTM(units = 100,
-                        input_shape=(1000, 100)))
+        #self.model.add(Embedding(input_dim=1000, output_dim=1000,
+        #                         input_length=100, mask_zero=True))
+        #self.model.add(LSTM(units = 100,input_shape=(270, 94)))
         self.model.add(Dense(units=int(self.configs['n_out'])))
-        self.model.add(Activation('sigmoid'))
+        self.model.add(Activation('softmax'))
 
     def load_config(self, config_file):
         with open(config_file, 'r') as fp:
@@ -57,23 +56,34 @@ class Embeddings():
         self.vectors = []
         self.embeddings = {}
         self.sentences = []
+        self.train_data = []
         self.x_train = np.random.random((100, 100))
-        self.y_train = np.random.randint(100, size=(100, 100))
+        self.y_train = np.random.randint(100, size=(270, 2))
         self.x_test = None
         self.y_test = None
-        self.epochs = 1
-        self.maxlen = 1000
+        self.epochs = 800
+        self.max_length = -1
+        self.embedding_size = None
+        self.word_num = None
+        self.train_data_num = 0
 
     def load_training_data(self, training_data):
         # TODO split x,y data
         with open(training_data, 'r') as fp:
             for sentence in fp:
                 sentence = sentence.rstrip('\n')
+                sentence = sentence.split(' ')
                 self.sentences.append(sentence)
+                sentence_length = len(sentence)
+                if sentence_length >= self.max_length:
+                    self.max_length = sentence_length
+                self.train_data_num += 1
 
     def load_embeddings(self, embeddings_data):
         with open(embeddings_data, 'r') as fp:
-            for embedding in fp: # TODO pop(0)
+            line = fp.readline()
+            self.word_num, self.embedding_size = line.split(' ')
+            for embedding in fp:
                 embedding = embedding.rstrip('\n')
                 embedding = embedding.split(' ')
                 word = embedding.pop(0)
@@ -88,16 +98,23 @@ class Embeddings():
                 else:
                     word = self.embeddings[word]
                 vector.append(word)
-            self.vectors.append(vector)
+            self.train_data.append(vector)
 
-    def split_data(self):
-        return 0
+    def sentences2index(self):
+        for sentence in self.sentences:
+            vector = []
+            for word in sentence:
+                word = 1
+                vector.append(word)
+            self.train_data.append(vector)
 
-
-def debug_vectors(vectors):
-    for vector in vectors:
-        print(len(vector))
-        print('\n')
+    def padding_vectors(self):
+        vectors = []
+        for vector in self.train_data:
+            diff = self.max_length - len(vector)
+            vector = vector + [0 for i in range(0,diff)]
+            vectors.append(vector)
+        self.train_data = np.array(vectors)
 
 
 def main():
@@ -105,15 +122,19 @@ def main():
     embeddings = Embeddings()
     embeddings.load_training_data(args.training_data)
     embeddings.load_embeddings(args.embeddings_data)
-    embeddings.sentences2embeddings()
+    #embeddings.sentences2embeddings()
+    embeddings.sentences2index()
+    embeddings.padding_vectors()
+
+    print(embeddings.train_data_num)
+    print(embeddings.embedding_size)
 
     bilstm_model = BILSTM_Model()
     bilstm_model.load_config(args.config_file)
     bilstm_model.load_model()
     bilstm_model.compile()
 
-    bilstm_model.model.fit(embeddings.x_train, embeddings.y_train, epochs = embeddings.epochs)
-
+    bilstm_model.model.fit(embeddings.train_data, embeddings.y_train, epochs = embeddings.epochs)
 
 if __name__ == '__main__':
     main()
