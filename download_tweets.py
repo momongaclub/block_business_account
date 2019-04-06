@@ -1,6 +1,5 @@
 import argparse
 import tweepy
-import json
 import csv
 import MeCab
 
@@ -61,6 +60,7 @@ class Twitter_api():
             for sentence in corpus:
                 self.sentences.append(sentence)
                 # TODO self.sentences.append(tweet.profile)
+                # TODO remove RT
 
     def export_csv_data(self, fname):
         with open(fname, 'w') as fp:
@@ -96,4 +96,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
