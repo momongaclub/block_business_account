@@ -1,5 +1,7 @@
 import sys
 
+UNK = '<unk>'
+
 
 class Train_data():
 
@@ -18,16 +20,18 @@ class Train_data():
 
 
 class Tweets2vec(Train_data):
-    
+
     def __init__(self):
+        Train_data.__init__(self)
         self.embeddings = {}
 
     def load_embedding(self, fname):
         with open(fname, 'r') as fp:
             embedding_info = fp.readline()
             embedding_info = embedding_info.split(' ')
-            word_sum = embedding_info[0]
-            embedding_dim = embedding_info[1]
+            word_size = int(embedding_info[0])
+            embedding_dim = int(embedding_info[1])
+            self.embeddings[UNK] = [0.0 for i in range(0, embedding_dim)]
             for embedding in fp:
                 embedding = embedding.rstrip('\n')
                 embedding = embedding.split(' ')
@@ -38,17 +42,18 @@ class Tweets2vec(Train_data):
     def tweets2vec(self):
         sentences = []
         for sentence in self.train_data:
-            sentence = []
+            words = []
             for word in sentence:
-                sentence.append(self.embeddings[word])
-            sentences.append(sentence)
+                word = self.embeddings.get(word, self.embeddings[UNK])
+                words.append(word)
+            sentences.append(words)
         self.train_data = sentences
 
 
 def main():
     embeddings = Tweets2vec()
-    embeddings.load_data(sys.argv[2])
-    embeddings.load_embedding(sys.argv[1])
+    embeddings.load_data(sys.argv[1])
+    embeddings.load_embedding(sys.argv[2])
     embeddings.tweets2vec()
 
 
