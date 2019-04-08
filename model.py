@@ -6,6 +6,8 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation, Embedding
 from keras.layers.recurrent import LSTM
 
+import Data
+
 """
 input: vector of sentence writtenby japanese
 output: binary value.
@@ -50,91 +52,26 @@ class BILSTM_Model():
                            metrics=[self.configs['metrics']])
 
 
-class Embeddings():
-
-    def __init__(self):
-        self.vectors = []
-        self.embeddings = {}
-        self.sentences = []
-        self.train_data = []
-        self.x_train = np.random.random((100, 100))
-        self.y_train = np.random.randint(100, size=(270, 2))
-        self.x_test = None
-        self.y_test = None
-        self.epochs = 800
-        self.max_length = -1
-        self.embedding_size = None
-        self.word_num = None
-        self.train_data_num = 0
-
-    def load_training_data(self, training_data):
-        # TODO split x,y data
-        with open(training_data, 'r') as fp:
-            for sentence in fp:
-                sentence = sentence.rstrip('\n')
-                sentence = sentence.split(' ')
-                self.sentences.append(sentence)
-                sentence_length = len(sentence)
-                if sentence_length >= self.max_length:
-                    self.max_length = sentence_length
-                self.train_data_num += 1
-
-    def load_embeddings(self, embeddings_data):
-        with open(embeddings_data, 'r') as fp:
-            line = fp.readline()
-            self.word_num, self.embedding_size = line.split(' ')
-            for embedding in fp:
-                embedding = embedding.rstrip('\n')
-                embedding = embedding.split(' ')
-                word = embedding.pop(0)
-                self.embeddings[word] = embedding
-
-    def sentences2embeddings(self):
-        for sentence in self.sentences:
-            vector = []
-            for word in sentence:
-                if self.embeddings.get(word, None) is None:
-                    word = '<unk>' #TODO unknown word process
-                else:
-                    word = self.embeddings[word]
-                vector.append(word)
-            self.train_data.append(vector)
-
-    def sentences2index(self):
-        for sentence in self.sentences:
-            vector = []
-            for word in sentence:
-                word = 1
-                vector.append(word)
-            self.train_data.append(vector)
-
-    def padding_vectors(self):
-        vectors = []
-        for vector in self.train_data:
-            diff = self.max_length - len(vector)
-            vector = vector + [0 for i in range(0,diff)]
-            vectors.append(vector)
-        self.train_data = np.array(vectors)
-
-
 def main():
     args = parse()
-    embeddings = Embeddings()
-    embeddings.load_training_data(args.training_data)
-    embeddings.load_embeddings(args.embeddings_data)
+    #embeddings = Embeddings()
+    #embeddings.load_training_data(args.training_data)
+    #embeddings.load_embeddings(args.embeddings_data)
     #embeddings.sentences2embeddings()
-    embeddings.sentences2index()
-    embeddings.padding_vectors()
+    #embeddings.sentences2index()
+    #embeddings.padding_vectors()
 
-    print(embeddings.train_data_num)
-    print(embeddings.embedding_size)
+    embeddings = Data.Tweets2vec()
+    embeddings.load_data(args.training_data)
+    embeddings.load_embedding(args.embeddings_data)
+    embeddings.tweets2vec()
 
     bilstm_model = BILSTM_Model()
     bilstm_model.load_config(args.config_file)
     bilstm_model.load_model()
     bilstm_model.compile()
 
-    bilstm_model.model.fit(embeddings.train_data, embeddings.y_train, epochs = embeddings.epochs)
+    bilstm_model.model.fit(embeddings.train_data, embeddings.y_train, epochs = 100)
 
 if __name__ == '__main__':
     main()
