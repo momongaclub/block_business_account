@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 
 UNK = '<unk>'
 
@@ -7,6 +8,8 @@ class Train_data():
 
     def __init__(self):
         self.train_data = []
+        self.words = []
+        self.test_data = np.zeros((100,2))
 
     def load_data(self, fname):
         with open(fname, 'r') as fp:
@@ -14,6 +17,8 @@ class Train_data():
                 datum = datum.rstrip('\n')
                 datum = datum.split(' ')
                 self.train_data.append(datum)
+                for word in datum:
+                    self.words.append(word)
 
     def __str__(self):
         return 'data:' + self.train_data[1]
@@ -37,9 +42,10 @@ class Tweets2vec(Train_data):
                 embedding = embedding.split(' ')
                 word = embedding.pop(0)
                 vec = embedding
-                self.embeddings[word] = vec
+                if word in self.words:
+                    self.embeddings[word] = vec
 
-    def tweets2vec(self):
+    def convert_tweets2vec(self):
         sentences = []
         for sentence in self.train_data:
             words = []
@@ -48,13 +54,14 @@ class Tweets2vec(Train_data):
                 words.append(word)
             sentences.append(words)
         self.train_data = sentences
+            #TODO think time labeing paddings
 
 
 def main():
     embeddings = Tweets2vec()
     embeddings.load_data(sys.argv[1])
     embeddings.load_embedding(sys.argv[2])
-    embeddings.tweets2vec()
+    embeddings.convert_tweets2vec()
 
 
 if __name__ == '__main__':
