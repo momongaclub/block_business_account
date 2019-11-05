@@ -1,1 +1,1 @@
-python3 train_bussiness_account.py config corpus/jpn.csv corpus/wiki_data.vec
+python3 train.py corpus/test.data corpus/test.ydata corpus/wiki_data.vec 10

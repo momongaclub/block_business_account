@@ -30,29 +30,18 @@ def main():
         data.train_data[user_id] = torch.Tensor(data.train_data[user_id])
     y = data.train_Ydata
     y = torch.Tensor(y)
-    #y = y.long()
-    #y = torch.squeeze(y)
-    print(y)
+    y = torch.squeeze(y)
     input_dim = 100
     hidden_dim = 30
-    output_dim = 1  # TODO 2
+    output_dim = 1
     h0 = torch.zeros(hidden_dim)
     rnn = Network.RNN(input_dim, hidden_dim, output_dim)
-    for epoch in range(args.epoch):
-        loss = 0
-        for user_id in range(len(data.train_data)):  # batch_size
-            output = rnn.forward(data.train_data[user_id], h0)
-            loss_function = nn.MSELoss()
-            #loss_function = nn.CrossEntropyLoss()
-            print(output, y[user_id])
-            loss += loss_function(output, y[user_id])
-            #  loss = loss_function(output, y[user_id])
-        optimizer = torch.optim.SGD(rnn.parameters(), lr=1e-2, momentum=0.9)
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        print('epoch:', epoch, 'loss:', loss.item())
-    torch.save(rnn.state_dict(), 'model.pt')
+    #model = load_model('model.pt')
+    rnn.load_state_dict(torch.load('model.pt'))
+    #rnn.eval()
+    for user_id in range(len(data.train_data)):  # batch_size
+        output = rnn.forward(data.train_data[user_id], h0)
+        print(output)
 
 
 if __name__ == '__main__':
