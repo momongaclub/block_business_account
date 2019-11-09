@@ -34,6 +34,11 @@ class Twitter_connection():
         self.auth.set_access_token(self.keys['ACCESS_TOKEN'],
                                    self.keys['ACCESS_SECRET'])
 
+    def connect_twitter_api(self, fname):
+        self.load_keys(fname)
+        self.OAuthHandler()
+        self.access_token()
+
 
 class Twitter_api():
 
@@ -90,15 +95,17 @@ class Twitter_api():
 def main():
     args = parse()
     twitter_connection = Twitter_connection()
-    twitter_connection.load_keys(args.keys)
-    twitter_connection.OAuthHandler()
-    twitter_connection.access_token()
+    twitter_connection.connect_twitter_api(args.keys)
 
     twitter = Twitter_api(twitter_connection.auth)
     twitter.set_keyword(args.keyword)
     twitter.set_count(args.count)
     #twitter.get_keyword_tweets()
     #print(twitter.api.user_timeline(user_name, count=args.count))
+    # TODO 適当なワードでツイートを取得
+    # ツイートからユーザid or ユーザ名を取得
+    # ユーザ名からツイートをn件取得
+    # 書き込む
     tweet_ = twitter.api.search('は', count=args.count)
     print(tweet_[0])
     print(tweet_[0].text)
