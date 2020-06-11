@@ -1,58 +1,84 @@
+from Class import Data
+from Class import Model
+
+import sys
 import argparse
 import torch
 import torch.nn as nn
+import matplotlib.pyplot as plt
 
-from Class import Data
-from Class import Embeddings
-from Class import Network
+def parse():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('epochs')
+    parser.add_argument('batch_size')
+    parser.add_argument('lr')
+    parser.add_argument('momentum')
 
 
-def parser():
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument('x_data')
-    argparser.add_argument('y_data')
-    argparser.add_argument('embeddings')
-    argparser.add_argument('epoch', type=int)
-    args = argparser.parse_args()
-    return args
+def plot_progress(x_axis, y_axis, time=0.1):
+    """
+    x_axis and y_axis is list
+    """
+    plt.plot(x_axis, y_axis)
+    plt.draw()
+    plt.pause(time)
+    plt.cla()
 
 
 def main():
-    args = parser()
-    data = Data.Train_data()
-    data.load_Xdata(args.x_data)
-    data.load_Ydata(args.y_data)
 
-    embeddings = Embeddings.Embeddings()
-    embeddings.load_embeddings(args.embeddings)
-    data.train_data = embeddings.train_data2embeddings(data.train_data, 100)
-    for user_id in range(len(data.train_data)):
-        data.train_data[user_id] = torch.Tensor(data.train_data[user_id])
-    y = data.train_Ydata
-    y = torch.Tensor(y)
-    #y = y.long()
-    #y = torch.squeeze(y)
-    print(y)
-    input_dim = 100
-    hidden_dim = 30
-    output_dim = 1  # TODO 2
-    h0 = torch.zeros(hidden_dim)
-    rnn = Network.RNN(input_dim, hidden_dim, output_dim)
-    for epoch in range(args.epoch):
-        loss = 0
-        for user_id in range(len(data.train_data)):  # batch_size
-            output = rnn.forward(data.train_data[user_id], h0)
-            loss_function = nn.MSELoss()
-            #loss_function = nn.CrossEntropyLoss()
-            print(output, y[user_id])
-            loss += loss_function(output, y[user_id])
-            #  loss = loss_function(output, y[user_id])
-        optimizer = torch.optim.SGD(rnn.parameters(), lr=1e-2, momentum=0.9)
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        print('epoch:', epoch, 'loss:', loss.item())
-    torch.save(rnn.state_dict(), 'model.pt')
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(device)
+
+    data_set = Data.Data()
+    data_set.make_dataset()
+    data_set.make_vocab()
+    data_set.make_iter()
+    vocab_size = data_set.texts.vocab.vectors.size()[0]
+    embedd_dim = data_set.texts.vocab.vectors.size()[1]
+    hidden_dim = 100
+    vocab_vectors = data_set.texts.vocab.vectors
+
+    rnn = Model.simplernn(embedd_dim, hidden_dim, vocab_size, vocab_vectors)
+    rnn.to(device)
+    # パラメータの読み込み
+    #parameter = torch.load('./model_weight/model0.pt',
+    #                       map_location=torch.device(device))
+
+    loss_function = nn.CrossEntropyLoss()  # softmaxを含む
+    optimizer = torch.optim.SGD(rnn.parameters(), lr=0.001, momentum=0.9)
+
+    losses = []
+    batch_sizes = []
+
+    for epoch in range(300):
+        data_len = len(data_set.train_iter)
+        batch_len = 0
+        for batch in iter(data_set.train_iter):
+            batch_len = batch_len + 1
+            input_ = batch.Texts
+            input_ = input_.to(device) # memoryに乗せる
+            target = batch.Favorites_cnt
+            # torch.eye(クラス数)[対象tensor]でonehotへ
+            # target = torch.eye(6, dtype=torch.long)[target]
+            target = target.squeeze()  # 次元変換
+            # print('target', target.size())
+            target = target.to(device)
+            optimizer.zero_grad()
+            output = rnn.forward(input_)
+            output = output.squeeze()  # 次元変換
+            # print('output', output, 'target', target)
+            # print('output_size', output.size(), 'target', target.size())
+            loss = loss_function(output, target)
+            loss.backward()
+            optimizer.step()
+            print('epoch:', epoch, 'batch_len', batch_len,
+                  '/', data_len, 'loss:', loss.item())
+            batch_sizes.append(batch_len + (epoch*313))
+            losses.append(loss)
+            plot_progress(batch_sizes, losses)
+        #torch.save(rnn.state_dict(), './model_weight/' 'model' + str(epoch) + '.pt')
+    torch.save(rnn.state_dict(), './model_weight/' 'model' + '1' + '.pt')
 
 
 if __name__ == '__main__':
