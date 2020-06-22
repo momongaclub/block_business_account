@@ -7,6 +7,8 @@ TAB = '\t'
 SEP = '\n'
 SPACE = ' '
 
+SEPARATOR = '<SEP>'
+
 def parser():
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('keys', type=str, help='include four keys.')
@@ -63,8 +65,8 @@ class User():
                 if str(line[0]) == 'texts':
                     sentences = ''
                     for sentence in line[1]:
-                        sentences = sentences + sentence + ','
-                    sentences.rstrip(',')
+                        sentences = sentences + sentence + SEPARATOR
+                    sentences.rstrip(SEPARATOR)
                     fp.write(sentences)
                 else:
                     fp.write(str(line[1]))
@@ -88,7 +90,6 @@ def main():
     api.get_user_names(args.count)
     all_user_data = []
     for user_name in api.user_names:
-        # user_data = []
         user = User()
         user.name = user_name
         user_datum = api.api.user_timeline(user.name, count=1, page=1)
@@ -113,8 +114,8 @@ def main():
                 text ='None'
             #user_data.append(user_datum)
             user.texts.append(text)
-        print(SEP)
-        print(user)
+        #print(SEP)
+        #print(user)
         user.write_data(args.output_file)
         all_user_data.append(user)
     # write_data(args.output_file, all_user_data)
