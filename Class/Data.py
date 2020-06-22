@@ -8,16 +8,16 @@ import matplotlib.pyplot as plt
 import MeCab
 
 PATH = '~/programs/block_business_account/'
-# TRAIN = 'twitter.corpus_another'
-TRAIN = 'sample_data'
-TEST = 'sample_data'
-VALIDATION = 'sample_data'
+TRAIN = 'twitter.corpus'
+# TRAIN = 'sample_data'
+TEST = 'twitter.corpus'
+VALIDATION = 'twitter.corpus'
 FORMAT = 'tsv'
 TRAIN_BATCH_SIZE = 64
 VAL_BATCH_SIZE = 256
 TEST_BATCH_SIZE = 16
 
-SEP = ','
+SEP = '<SEP>'
 
 
 def tokenizer(text):
@@ -27,7 +27,8 @@ def tokenizer(text):
     for text in texts:
         text = m.parse(text)
         text = text.rstrip('\n')
-        preprocessed_texts.append(text)
+        text = text.split(' ') # add
+        preprocessed_texts += text
     return preprocessed_texts
 
 class Data():
@@ -48,7 +49,8 @@ class Data():
         self.created_at = torchtext.data.Field(batch_first=True)
         self.followers_count = torchtext.data.Field(batch_first=True)
         self.friends_count = torchtext.data.Field(batch_first=True)
-        self.favorites_count = torchtext.data.Field(batch_first=True)
+        # self.favorites_count = torchtext.data.Field(batch_first=True)
+        self.favorites_count = torchtext.data.LabelField(batch_first=True, sequential=False)
         self.texts = torchtext.data.Field(tokenize=tokenizer, sequential=True, batch_first=True, lower=True)
         
         self.train_ds = 0
@@ -75,7 +77,6 @@ class Data():
         self.texts.build_vocab(self.train_ds.Texts, self.val_ds.Texts,
                                self.test_ds.Texts,
                                vectors=vocab_vectors)
-                               #vectors=torchtext.vocab.FastText(language="ja"))
         self.description.build_vocab(self.train_ds.Description, self.val_ds.Description,
                                      self.test_ds.Description, vectors=torchtext.vocab.FastText(language="ja"))
 # TODO 以下全部self.Descriptionになってるので修正
@@ -93,8 +94,9 @@ class Data():
                                          self.test_ds.Description)
         self.friends_count.build_vocab(self.train_ds.Description, self.val_ds.Description,
                                        self.test_ds.Description)
-        self.favorites_count.build_vocab(self.train_ds.Description, self.val_ds.Description,
-                                         self.test_ds.Description)
+        self.favorites_count.build_vocab(self.train_ds.Favorites_cnt,
+                                         self.val_ds.Favorites_cnt,
+                                         self.test_ds.Favorites_cnt)
         #self.label.build_vocab(self.train_ds.Label,
         #                       self.val_ds.Label, self.test_ds.Label)
 

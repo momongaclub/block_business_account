@@ -35,6 +35,9 @@ def main():
     data_set.make_dataset()
     vocab_vectors = torchtext.vocab.Vectors(name = './corpus/wiki_data.vec')
     data_set.make_vocab(vocab_vectors)
+    # print(data_set.texts.vocab.freqs)
+    # print(data_set.texts.vocab.stoi)
+    # sys.exit()
     data_set.make_iter()
     vocab_size = data_set.texts.vocab.vectors.size()[0]
     embedd_dim = data_set.texts.vocab.vectors.size()[1]
@@ -51,18 +54,21 @@ def main():
 
     losses = []
     batch_sizes = []
+    epochs = []
 
     for epoch in range(300):
         data_len = len(data_set.train_iter)
         batch_len = 0
         for batch in iter(data_set.train_iter):
             batch_len = batch_len + 1
+            # input_ = batch.Texts
             input_ = batch.Texts
             input_ = input_.to(device)
             target = batch.Favorites_cnt # label
             # torch.eye(クラス数)[対象tensor]でonehotへ
             # target = torch.eye(6, dtype=torch.long)[target]
             target = target.squeeze()  # 次元変換
+            print(target)
             # print('target', target.size())
             target = target.to(device)
             optimizer.zero_grad()
@@ -75,9 +81,10 @@ def main():
             optimizer.step()
             print('epoch:', epoch, 'batch_len', batch_len,
                   '/', data_len, 'loss:', loss.item())
-            batch_sizes.append(batch_len + (epoch*313))
+            batch_sizes.append(batch_len + (epoch*11))
             losses.append(loss)
             plot_progress(batch_sizes, losses)
+        #epochs.append(epoch)
         #torch.save(rnn.state_dict(), './model_weight/' 'model' + str(epoch) + '.pt')
     torch.save(rnn.state_dict(), './model_weight/' 'model' + '1' + '.pt')
 
