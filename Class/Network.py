@@ -1,13 +1,15 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import sys
 
 
 class RNN(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim):
+    def __init__(self, input_dim, hidden_dim, output_dim, user_vec_dim):
         super(RNN, self).__init__()
         self.input2hidden = nn.Linear(input_dim + hidden_dim, hidden_dim)
-        self.uservec2binary = nn.Linear(600, output_dim)
+        self.lstm = nn.LSTM(input_dim, hidden_dim)
+        self.uservec2binary = nn.Linear(user_vec_dim, output_dim) # TODO hidden_dim * sentence_n
 
     def forward(self, input_, hidden):
         tweet_vecs = []
@@ -17,14 +19,15 @@ class RNN(nn.Module):
                 combined = torch.cat((word_vec, hidden), dim=0)
                 hidden = self.input2hidden(combined)
                 hidden = torch.tanh(hidden)
+            #L, _ = self.lstm(input_, hidden)
+            #print(L)
             tweet_vec = hidden
             tweet_vecs.append(tweet_vec)
         user_vec = torch.cat(tweet_vecs)  # ユーザのツイートを集約したベクトル
+        print(user_vec)
         output = self.uservec2binary(user_vec)
-        #output = torch.tanh(output)
-        output = torch.sigmoid(output)  # TODO softmaxと検討
+        #output = torch.sigmoid(output)  # TODO softmaxと検討
         #output = torch.nn.Softmax(output)  # TODO softmaxと検討
-        print(output)
         return output
 
 

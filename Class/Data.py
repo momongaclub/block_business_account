@@ -7,7 +7,8 @@ import spacy
 import matplotlib.pyplot as plt
 import MeCab
 
-PATH = '../'
+PATH = '~/programs/block_business_account/'
+# TRAIN = 'twitter.corpus_another'
 TRAIN = 'sample_data'
 TEST = 'sample_data'
 VALIDATION = 'sample_data'
@@ -69,14 +70,31 @@ class Data():
                         ('Favorites_cnt', self.favorites_count), ('Texts', self.texts)
                         ])
 
-    def make_vocab(self):
+    def make_vocab(self, vocab_vectors):
         # 3種類の辞書を作成,vectorsを指定すると事前学習した分散表現を読み込める
         self.texts.build_vocab(self.train_ds.Texts, self.val_ds.Texts,
                                self.test_ds.Texts,
-                               vectors=torchtext.vocab.FastText(language="ja"))
-        #                       vectors='../corpus/wiki_data.vec')
-        #self.head.build_vocab(self.train_ds.Head, self.val_ds.Head,
-        #                      self.test_ds.Head, vectors=torchtext.vocab.GloVe(name='6B', dim=300))
+                               vectors=vocab_vectors)
+                               #vectors=torchtext.vocab.FastText(language="ja"))
+        self.description.build_vocab(self.train_ds.Description, self.val_ds.Description,
+                                     self.test_ds.Description, vectors=torchtext.vocab.FastText(language="ja"))
+# TODO 以下全部self.Descriptionになってるので修正
+        self.name.build_vocab(self.train_ds.Description, self.val_ds.Description,
+                                     self.test_ds.Description, vectors=torchtext.vocab.FastText(language="ja"))
+        self.id.build_vocab(self.train_ds.Description, self.val_ds.Description,
+                                     self.test_ds.Description)
+        self.location.build_vocab(self.train_ds.Description, self.val_ds.Description,
+                                     self.test_ds.Description, vectors=torchtext.vocab.FastText(language="ja"))
+        self.url.build_vocab(self.train_ds.Description, self.val_ds.Description,
+                                     self.test_ds.Description)
+        self.created_at.build_vocab(self.train_ds.Description, self.val_ds.Description,
+                                     self.test_ds.Description)
+        self.followers_count.build_vocab(self.train_ds.Description, self.val_ds.Description,
+                                         self.test_ds.Description)
+        self.friends_count.build_vocab(self.train_ds.Description, self.val_ds.Description,
+                                       self.test_ds.Description)
+        self.favorites_count.build_vocab(self.train_ds.Description, self.val_ds.Description,
+                                         self.test_ds.Description)
         #self.label.build_vocab(self.train_ds.Label,
         #                       self.val_ds.Label, self.test_ds.Label)
 
@@ -93,7 +111,9 @@ class Data():
 def main():
     data = Data()
     data.make_dataset()
-    data.make_vocab()
+    vocab_vectors = torchtext.vocab.Vectors(name = './corpus/wiki_data.vec')
+    data.make_vocab(vocab_vectors)
+    print(data.texts.vocab.freqs)
     data.make_iter()
 
 

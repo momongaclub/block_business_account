@@ -40,8 +40,8 @@ class Embeddings():
     def train_data2embeddings(self, train_data, embedding_size):
         # ツイート数のパデングができてない
         unk_vec = [0.0 for i in range(embedding_size)] #TODO 未知語これでいいのか:
-        padding_vec = [[0.0 for i in range(embedding_size)] for j in range(140)]
-        tweets_padding_vec = [ padding_vec for i in range(20)] # 20件とする
+        padding_vec = [[0.0 for i in range(embedding_size)] for j in range(85)] # TODO 最大文長に合わせる
+        tweets_padding_vec = [ padding_vec for i in range(10)] # 20件とする
         embedded_train_data = []
         for tweets in train_data:
             embedded_tweets = []

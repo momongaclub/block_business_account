@@ -1,6 +1,7 @@
 import argparse
 import tweepy
 import MeCab
+import sys
 
 
 def parse():
@@ -14,11 +15,18 @@ def parse():
     return args
 
 
-class Twitter_connection():
+class Twitter_api():
 
     def __init__(self):
         self.keys = {}
         self.auth = None
+        self.api = None
+        self.keyword = ""
+        self.count = 0
+        self.tweets = ""
+        self.sentences = []
+        self.userid = ""
+        self.user_names = []
 
     def load_keys(self, fname):
         with open(fname, 'r') as fp:
@@ -38,17 +46,7 @@ class Twitter_connection():
         self.load_keys(fname)
         self.OAuthHandler()
         self.access_token()
-
-
-class Twitter_api():
-
-    def __init__(self, auth):
-        self.api = tweepy.API(auth)
-        self.keyword = ""
-        self.count = 0
-        self.tweets = ""
-        self.sentences = []
-        self.userid = ""
+        self.api = tweepy.API(self.auth)
 
     def set_keyword(self, keyword):
         self.keyword = keyword
@@ -58,10 +56,6 @@ class Twitter_api():
 
     def get_keyword_tweets(self):
         self.tweets = self.api.search(q=self.keyword, count=self.count)
-
-    def get_user_tweets(self):
-        pass
-        #self.tweets = self.api.search(self.userid, count=self.count)
 
     def tweets2sentences(self):
         for tweet in self.tweets:
@@ -74,14 +68,15 @@ class Twitter_api():
 
     def write_tweets(self, fname):
         tweet = ''
-        with open(fname, 'w') as fp:
+        with open(fname, 'a') as fp:
             for sentence in self.sentences:
                 sentence = sentence.rstrip('\n')
                 #sentence = '<BOS>' + ' ' + sentence + ' ' + '<EOS>'
                 tweet += sentence + '\t'
             tweet = tweet.rstrip('\t')
-            fp.write(tweet)
-            fp.write('\n')
+            if tweet != '':
+                fp.write(tweet)
+                fp.write('\n')
 
     def sentences2wakati_sentences(self):
         wakati_sentences = []
@@ -91,52 +86,18 @@ class Twitter_api():
             wakati_sentences.append(wakati_sentence)
         self.sentences = wakati_sentences
 
+    def get_user_names(self, user_num):
+        # randomに（'て、お、に、はを含む文章をとるか'）
+        tweets = self.api.search('は', count=user_num)
+        for tweet in tweets:
+            self.user_names.append(tweet.user.screen_name)
+
+    def get_users_tweets(self):
+        for user_name in self.user_names:
+            result = twitter.api.user_timeline(args.user_id, count=args.count, page=page_n)
 
 def main():
-    args = parse()
-    twitter_connection = Twitter_connection()
-    twitter_connection.connect_twitter_api(args.keys)
-
-    twitter = Twitter_api(twitter_connection.auth)
-    twitter.set_keyword(args.keyword)
-    twitter.set_count(args.count)
-    #twitter.get_keyword_tweets()
-    #print(twitter.api.user_timeline(user_name, count=args.count))
-    # TODO 適当なワードでツイートを取得
-    # ツイートからユーザid or ユーザ名を取得
-    # ユーザ名からツイートをn件取得
-    # 書き込む
-    tweet_ = twitter.api.search('は', count=args.count)
-    print(tweet_[0])
-    print(tweet_[0].text)
-    #user_name = tweet_[entitys].screen_name
-    #user_name = tweet_[0].entities.user_mentions
-    user_name = tweet_[0].entities
-
-    #print(twitter.api.user_timeline(user_name, count=args.count))
-    pages = []
-    for page_n in range(1):
-        result = twitter.api.user_timeline(args.user_id, count=args.count, page=page_n)
-        pages.append(result)
-    #twitter.set_keyword(user_name)
-    #twitter.get_keyword_tweets()
-    #print(twitter.tweets)
-    #twitter.tweets2sentences()
-
-    # TODO api.report_spam でスパム指定できるそうなのでコレはありがたいかも
-    for result in pages:
-        for status in result:
-            tweet = status.text
-            tweet = tweet.rstrip('\n')
-            words = tweet.split('\n')
-            tweet = ''
-            # ひとまずスペースで分割して写真のタグを取り除く。ついでに連結すれば問題ない
-            for i in range(len(words)):
-                tweet += words[i]
-            if tweet[0] != '@' and tweet[0:2] != 'RT': # remove reply and RT
-                twitter.sentences.append(tweet)
-    twitter.sentences2wakati_sentences()
-    twitter.write_tweets(args.output_file)
+    return 0
 
 if __name__ == '__main__':
     main()
