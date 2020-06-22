@@ -28,17 +28,18 @@ def main():
     data.train_data = embeddings.train_data2embeddings(data.train_data, 100)
     for user_id in range(len(data.train_data)):
         data.train_data[user_id] = torch.Tensor(data.train_data[user_id])
+    tweet_num = len(data.train_data[0])
     y = data.train_Ydata
     y = torch.Tensor(y)
     y = torch.squeeze(y)
     input_dim = 100
     hidden_dim = 30
-    output_dim = 1
+    output_dim = 2
+    user_vec_dim = tweet_num * hidden_dim
     h0 = torch.zeros(hidden_dim)
-    rnn = Network.RNN(input_dim, hidden_dim, output_dim)
-    #model = load_model('model.pt')
+    rnn = Network.RNN(input_dim, hidden_dim, output_dim, user_vec_dim)
     rnn.load_state_dict(torch.load('model.pt'))
-    #rnn.eval()
+    rnn.eval()
     for user_id in range(len(data.train_data)):  # batch_size
         output = rnn.forward(data.train_data[user_id], h0)
         print(output)

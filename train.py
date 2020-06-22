@@ -6,6 +6,7 @@ import argparse
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
+import torchtext
 
 def parse():
     parser = argparse.ArgumentParser()
@@ -32,13 +33,13 @@ def main():
 
     data_set = Data.Data()
     data_set.make_dataset()
-    data_set.make_vocab()
+    vocab_vectors = torchtext.vocab.Vectors(name = './corpus/wiki_data.vec')
+    data_set.make_vocab(vocab_vectors)
     data_set.make_iter()
     vocab_size = data_set.texts.vocab.vectors.size()[0]
     embedd_dim = data_set.texts.vocab.vectors.size()[1]
     hidden_dim = 100
     vocab_vectors = data_set.texts.vocab.vectors
-
     rnn = Model.simplernn(embedd_dim, hidden_dim, vocab_size, vocab_vectors)
     rnn.to(device)
     # パラメータの読み込み
@@ -57,15 +58,15 @@ def main():
         for batch in iter(data_set.train_iter):
             batch_len = batch_len + 1
             input_ = batch.Texts
-            input_ = input_.to(device) # memoryに乗せる
-            target = batch.Favorites_cnt
+            input_ = input_.to(device)
+            target = batch.Favorites_cnt # label
             # torch.eye(クラス数)[対象tensor]でonehotへ
             # target = torch.eye(6, dtype=torch.long)[target]
             target = target.squeeze()  # 次元変換
             # print('target', target.size())
             target = target.to(device)
             optimizer.zero_grad()
-            output = rnn.forward(input_)
+            output = rnn.text_forward(input_)
             output = output.squeeze()  # 次元変換
             # print('output', output, 'target', target)
             # print('output_size', output.size(), 'target', target.size())

@@ -3,7 +3,7 @@ optimizer:adam
 loss:categorical_crossentropy
 metrics:accuracy
 n_in:100
-n_hidden1:100
+n_hidden:100
 n_out:2
 activation1:sigmoid
 embeddings:wiki.vec

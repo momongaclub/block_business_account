@@ -18,13 +18,6 @@ def parser():
     return args
 
 
-def write_data(fname, all_user_data):
-    with open(fname, 'a') as fp:
-        for user_data in all_user_data:
-            for datum in user_data:
-                datum = str(datum)
-                fp.writelines(datum + TAB)
-            fp.write('\n')
 
 def text2sentence(text):
     text = text.split(SEP)
@@ -70,13 +63,17 @@ class User():
                 if str(line[0]) == 'texts':
                     sentences = ''
                     for sentence in line[1]:
-                        sentences = sentences + sentence + TAB
-                    sentences.rstrip(TAB)
+                        sentences = sentences + sentence + ','
+                    sentences.rstrip(',')
                     fp.write(sentences)
                 else:
                     fp.write(str(line[1]))
                     fp.write(TAB)
             fp.write(SEP)
+
+    def is_description(self):
+        if self.description == '':
+            self.description = 'None'
 
     def __str__(self):
         for line in self.__dict__.items():
@@ -99,6 +96,7 @@ def main():
         user.id = user_datum.id
         user.screen_name = user_datum.user.screen_name
         user.description = text2sentence(user_datum.user.description)
+        user.is_description()
         user.followers_count = user_datum.user.followers_count
         user.friends_count = user_datum.user.friends_count
         # TODO datetime format になってるので文字列に変更

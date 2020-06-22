@@ -1,1 +1,1 @@
-python3 train.py corpus/test.data corpus/test.ydata corpus/wiki_data.vec 10
+python3 train.py corpus/data/x.data corpus/data/y.data corpus/wiki_data.vec 100
