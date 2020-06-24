@@ -35,13 +35,9 @@ def main():
     data_set.make_dataset()
     vocab_vectors = torchtext.vocab.Vectors(name = './corpus/entity_vector.model.txt')
     data_set.make_vocab(vocab_vectors)
-    # print(data_set.texts.vocab.freqs)
-    # print(data_set.texts.vocab.stoi)
-    # sys.exit()
     data_set.make_iter()
     vocab_size = data_set.texts.vocab.vectors.size()[0]
     embedd_dim = data_set.texts.vocab.vectors.size()[1]
-    # hidden_dim = 100
     hidden_dim = 4
     vocab_vectors = data_set.texts.vocab.vectors
     rnn = Model.simplernn(embedd_dim, hidden_dim, vocab_size, vocab_vectors)
@@ -49,7 +45,6 @@ def main():
     # パラメータの読み込み
     #parameter = torch.load('./model_weight/model0.pt',
     #                       map_location=torch.device(device))
-
     loss_function = nn.CrossEntropyLoss()  # softmaxを含む
     optimizer = torch.optim.SGD(rnn.parameters(), lr=0.001, momentum=0.9)
 
@@ -57,7 +52,7 @@ def main():
     batch_sizes = []
     epochs = []
 
-    for epoch in range(60):
+    for epoch in range(20):
         data_len = len(data_set.train_iter)
         batch_len = 0
         for batch in iter(data_set.train_iter):
@@ -71,18 +66,14 @@ def main():
             # torch.eye(クラス数)[対象tensor]でonehotへ
             # target = torch.eye(6, dtype=torch.long)[target]
             target = target.squeeze()  # 次元変換
-            print(target)
-            # print('target', target.size())
+            # print(target)
             target = target.to(device)
             optimizer.zero_grad()
             # output = rnn.text_forward(input_)
             output_texts = rnn.text_forward(input_texts)
             output_texts = output_texts.squeeze()  # 次元変換
-            print('output_texts:', output_texts.shape)
-            print('input_texts:', input_texts.shape)
             input_ = torch.cat((input_, output_texts), 1) # add
             output = rnn.forward(input_)
-            # output = rnn.
             output = output.squeeze()  # 次元変換
             # print('output', output, 'target', target)
             # print('output_size', output.size(), 'target', target.size())

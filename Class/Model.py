@@ -35,6 +35,7 @@ class simplernn(nn.Module):
         # lstmの最初の入力に過去の隠れ層はないのでゼロベクトルを代入する
         # self.hidden = self.init_hidden(sentence.size(0))
         embed = self.embed(sentence)
+        print(embed)
         # print(embed)
         # h_outが最後の出力になる
         y, (h_out, c_out) = self.lstm(embed)
@@ -47,19 +48,16 @@ class simplernn(nn.Module):
     def forward(self, vec):
         y = self.linear2(vec)
         y = torch.tanh(y)
-        print(y)
-        # TODO テキストはembedしてその後 concat する？
-        # それとも別ネットワークにして一回層噛ませるか。
+        # print(y)
         return y
 
     def concat_input(self, batch):
         # descriptionはembedいる embed = self.embed(sentence)
         concat_vec = torch.cat((batch.Name, batch.Id, batch.Url, batch.Created_at, batch.Followers_cnt, batch.Friends_cnt), 1)
         concat_vec = torch.cat((batch.Followers_cnt, batch.Friends_cnt), 1)
-        print(concat_vec)
+        # print(concat_vec)
         concat_vec = concat_vec.type(torch.FloatTensor)
         # concat_vec = concat_vec.squeeze()
-        print(concat_vec.shape)
         return concat_vec
 
 def main():
