@@ -51,6 +51,9 @@ class simplernn(nn.Module):
         # それとも別ネットワークにして一回層噛ませるか。
         return y
 
+    def concat_input(self, batch):
+        return 0
+
 def main():
     return 0
 

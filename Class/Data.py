@@ -113,7 +113,7 @@ class Data():
 def main():
     data = Data()
     data.make_dataset()
-    vocab_vectors = torchtext.vocab.Vectors(name = './corpus/wiki_data.vec')
+    vocab_vectors = torchtext.vocab.Vectors(name = '../corpus/entity_vector.model.txt')
     data.make_vocab(vocab_vectors)
     print(data.texts.vocab.freqs)
     data.make_iter()
