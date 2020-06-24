@@ -78,27 +78,23 @@ class Data():
                                self.test_ds.Texts,
                                vectors=vocab_vectors)
         self.description.build_vocab(self.train_ds.Description, self.val_ds.Description,
-                                     self.test_ds.Description, vectors=torchtext.vocab.FastText(language="ja"))
-# TODO 以下全部self.Descriptionになってるので修正
-        self.name.build_vocab(self.train_ds.Description, self.val_ds.Description,
-                                     self.test_ds.Description, vectors=torchtext.vocab.FastText(language="ja"))
-        self.id.build_vocab(self.train_ds.Description, self.val_ds.Description,
-                                     self.test_ds.Description)
-        self.location.build_vocab(self.train_ds.Description, self.val_ds.Description,
-                                     self.test_ds.Description, vectors=torchtext.vocab.FastText(language="ja"))
-        self.url.build_vocab(self.train_ds.Description, self.val_ds.Description,
-                                     self.test_ds.Description)
-        self.created_at.build_vocab(self.train_ds.Description, self.val_ds.Description,
-                                     self.test_ds.Description)
-        self.followers_count.build_vocab(self.train_ds.Description, self.val_ds.Description,
-                                         self.test_ds.Description)
-        self.friends_count.build_vocab(self.train_ds.Description, self.val_ds.Description,
-                                       self.test_ds.Description)
+                                     self.test_ds.Description, vectors=vocab_vectors)
+        self.name.build_vocab(self.train_ds.Name, self.val_ds.Name,
+                                     self.test_ds.Name, vectors=vocab_vectors)
+        self.id.build_vocab(self.train_ds.Id, self.val_ds.Id,
+                                     self.test_ds.Id)
+        self.location.build_vocab(self.train_ds.Location, self.val_ds.Location,
+                                     self.test_ds.Location, vectors=vocab_vectors)
+        self.url.build_vocab(self.train_ds.Url, self.val_ds.Url, self.test_ds.Url)
+        self.created_at.build_vocab(self.train_ds.Created_at, self.val_ds.Created_at,
+                                     self.test_ds.Created_at)
+        self.followers_count.build_vocab(self.train_ds.Followers_cnt, self.val_ds.Followers_cnt,
+                                         self.test_ds.Followers_cnt)
+        self.friends_count.build_vocab(self.train_ds.Friends_cnt, self.val_ds.Friends_cnt,
+                                       self.test_ds.Friends_cnt)
         self.favorites_count.build_vocab(self.train_ds.Favorites_cnt,
                                          self.val_ds.Favorites_cnt,
                                          self.test_ds.Favorites_cnt)
-        #self.label.build_vocab(self.train_ds.Label,
-        #                       self.val_ds.Label, self.test_ds.Label)
 
     def make_iter(self):
         self.train_iter, self.val_iter, self.test_iter = \
