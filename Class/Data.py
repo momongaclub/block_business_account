@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 import MeCab
 
 PATH = '~/programs/block_business_account/'
-TRAIN = 'twitter.corpus'
-# TRAIN = 'sample_data'
+#TRAIN = 'twitter.corpus'
+TRAIN = 'dummy.corpus'
 TEST = 'twitter.corpus'
 VALIDATION = 'twitter.corpus'
 FORMAT = 'tsv'
@@ -27,9 +27,10 @@ def tokenizer(text):
     for text in texts:
         text = m.parse(text)
         text = text.rstrip('\n')
-        text = text.split(' ') # add
+        text = text.split(' ')
         preprocessed_texts += text
     return preprocessed_texts
+
 
 class Data():
 
@@ -81,8 +82,7 @@ class Data():
                                      self.test_ds.Description, vectors=vocab_vectors)
         self.name.build_vocab(self.train_ds.Name, self.val_ds.Name,
                                      self.test_ds.Name, vectors=vocab_vectors)
-        self.id.build_vocab(self.train_ds.Id, self.val_ds.Id,
-                                     self.test_ds.Id)
+        self.id.build_vocab(self.train_ds.Id, self.val_ds.Id, self.test_ds.Id)
         self.location.build_vocab(self.train_ds.Location, self.val_ds.Location,
                                      self.test_ds.Location, vectors=vocab_vectors)
         self.url.build_vocab(self.train_ds.Url, self.val_ds.Url, self.test_ds.Url)
