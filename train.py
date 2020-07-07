@@ -8,6 +8,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import torchtext
 
+
 def parse():
     parser = argparse.ArgumentParser()
     parser.add_argument('epochs')
@@ -33,18 +34,17 @@ def main():
 
     data_set = Data.Data()
     data_set.make_dataset()
-    vocab_vectors = torchtext.vocab.Vectors(name = './corpus/entity_vector.model.txt')
+    vocab_vectors = torchtext.vocab.Vectors(name='./corpus/entity_vector.model.txt')
     data_set.make_vocab(vocab_vectors)
     data_set.make_iter()
     vocab_size = data_set.texts.vocab.vectors.size()[0]
     embedd_dim = data_set.texts.vocab.vectors.size()[1]
     hidden_dim = 4
+    text_hidden_dim = 4
+    
     vocab_vectors = data_set.texts.vocab.vectors
     rnn = Model.simplernn(embedd_dim, hidden_dim, vocab_size, vocab_vectors)
     rnn.to(device)
-    # パラメータの読み込み
-    #parameter = torch.load('./model_weight/model0.pt',
-    #                       map_location=torch.device(device))
     loss_function = nn.CrossEntropyLoss()  # softmaxを含む
     optimizer = torch.optim.SGD(rnn.parameters(), lr=0.001, momentum=0.9)
 
@@ -63,20 +63,18 @@ def main():
             input_ = concat_vec
             input_ = input_.to(device)
             target = batch.Favorites_cnt # label
-            # torch.eye(クラス数)[対象tensor]でonehotへ
-            # target = torch.eye(6, dtype=torch.long)[target]
             target = target.squeeze()  # 次元変換
-            # print(target)
             target = target.to(device)
             optimizer.zero_grad()
-            # output = rnn.text_forward(input_)
+            # 後使うべき入力 Name, Id, Descriptipn, Location, Url, Created_at,
+            # concat_vec = torch.cat((batch.Name, batch.Id, batch.Url, batch.Created_at)
             output_texts = rnn.text_forward(input_texts)
             output_texts = output_texts.squeeze()  # 次元変換
             input_ = torch.cat((input_, output_texts), 1) # add
+            print(input_.size())
+            break
             output = rnn.forward(input_)
             output = output.squeeze()  # 次元変換
-            # print('output', output, 'target', target)
-            # print('output_size', output.size(), 'target', target.size())
             loss = loss_function(output, target)
             loss.backward()
             optimizer.step()
@@ -85,9 +83,7 @@ def main():
             batch_sizes.append(batch_len + (epoch*16))
             losses.append(loss)
             plot_progress(batch_sizes, losses)
-        #epochs.append(epoch)
-        #torch.save(rnn.state_dict(), './model_weight/' 'model' + str(epoch) + '.pt')
-    torch.save(rnn.state_dict(), './model_weight/' 'model' + '1' + '.pt')
+        torch.save(rnn.state_dict(), './model_weight/' 'model' + str(epoch) + '.pt')
 
 
 if __name__ == '__main__':
